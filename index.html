@@ -1,21 +1,80 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mon application</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="js/stockage.js" defer></script>
-    <script src="js/donnees.js" defer></script>
-    <script src="js/affichage.js" defer></script>
-    <script src="js/app.js" defer></script>
-  </head>
-  <body>
-    <header>
-      <h1>Mon application</h1>
-    </header>
-    <nav aria-label="Navigation principale"></nav>
-    <main></main>
-    <footer></footer>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KinContacts</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="js/stockage.js" defer></script>
+  <script src="js/donnees.js" defer></script>
+  <script src="js/affichage.js" defer></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <header>
+    <button id="menu-button" type="button">☰</button>
+    <span class="logo">👤</span>
+    <h2>KinContacts</h2>
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="voirinput" placeholder="Rechercher">
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar open">
+      <button type="button" class="creation-btn">+ Créer un contact</button>
+      <a href="#" id="lien-contacts" class="active">👤 Contacts</a>
+      <a href="#" id="lien-favoris">⭐ Favoris</a>
+      <a href="#">🕘 Frequent</a>
+      <a href="#">👥 Other contacts</a>
+      <a href="#">🛠 Merge et fix</a>
+      <a href="#">⬇ Import</a>
+      <a href="#">🗑 Trash</a>
+      <a href="#">🏷 Labels</a>
+    </nav>
+
+    <main>
+      <button id="add-button" type="button">+</button>
+
+      <form id="contact-form" hidden>
+        <h3 id="form-titre">Nouveau contact</h3>
+
+        <label for="prenom">Prénom (obligatoire)</label>
+        <input type="text" id="prenom" placeholder="Prénom">
+
+        <label for="nom">Nom</label>
+        <input type="text" id="nom" placeholder="Nom de famille">
+
+        <label for="telephone">Téléphone</label>
+        <input type="tel" id="telephone" placeholder="0984856074 ou +243808070629">
+
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="Adresse email">
+
+        <p id="form-error" role="alert"></p>
+
+        <button type="button" id="supprimer-button">Annuler</button>
+        <button type="button" id="save-button">Enregistrer</button>
+      </form>
+
+      <h3>Contacts</h3>
+      <ul id="contacts-list"></ul>
+      <p id="empty-message">Aucun contact pour le moment.</p>
+    </main>
+  </div>
+
+  <dialog id="fiche-dialog">
+    <span id="fiche-avatar" class="avatar"></span>
+    <h3 id="fiche-titre"></h3>
+    <p id="fiche-telephone"></p>
+    <p id="fiche-email"></p>
+      <button type="button" id="fiche-modifier">Modifier</button>
+      <button type="button" id="fiche-fermer">Fermer</button>
+  </dialog>
+
+  <footer>
+
+  </footer>
+</body>
 </html>

@@ -1,3 +1,302 @@
-/* Couleurs et espacements en variables : réutilise-les partout avec var(--…). */
 :root {
+    --fond: #f8fafd;
+    --blanc: #ffffff;
+    --texte: #220b0b;
+    --gris-texte: #5f6368;
+    --gris-bordure: #e0e0e0;
+    --gris-survol: #e8eaed;
+    --bleu: #1a73e8;
+    --bleu-clair: #c2e7ff;
+    --bleu-actif: #d3e3fd;
+    --bleu-recherche: #eaf1fb;
+    --rouge: #b3261e;
+    --jaune: #f9ab00;
+    --espace: 16px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: var(--fond);
+    color: var(--texte);
+}
+
+header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 64px;
+    padding: 8px ;
+    background: navy;
+}
+
+#menu-button {
+    border: none;
+    background: transparent;
+    font-size: 24px;
+    padding: 5px 12px;
+    border-radius: 50px;
+    cursor: pointer;
+}
+
+#menu-button:hover {
+    background: var(--gris-survol);
+}
+
+.logo {
+    font-size: 38px;
+}
+
+header h2 {
+    margin: 0 24px 0 0;
+    font-size: 22px;
+    font-weight: 400;
+    color: black;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    max-width: 720px;
+    height: 48px;
+    padding: 10px;
+    border-radius: 50px;
+    background: white;
+}
+
+.search-bar:focus-within {
+    background: white;
+}
+
+.search-icon {
+    margin-right: 12px;
+}
+
+.voirinput {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: white;
+    font-size: 16px;
+}
+
+.layout {
+    display: flex;
+}
+
+.sidebar {
+    display: none;                 
+    flex-direction: column;
+    gap: 4px;
+    width: 256px;
+    padding: 8px 12px;
+}
+
+.sidebar.open {
+    display: flex;                 
+}
+
+.creation-btn {
+    align-self: flex-start;
+    margin-bottom: 10px;
+    padding: 16px 24px;
+    border: none;
+    border-radius: 16px;
+    background: rgb(187, 173, 173);
+    cursor: pointer;
+}
+
+.sidebar a {
+    padding: 10px;
+    border-radius: 24px;
+    color: none;
+    text-decoration: none;
+}
+
+.sidebar a:hover {
+    background: var(--gris-survol);
+}
+
+.sidebar a.active {
+    background: var(--bleu-actif);
+    font-weight: bold;
+}
+
+main {
+    flex: 1;
+    padding: var(--espace);
+    margin: 0 var(--espace) var(--espace) 0;
+    border-radius: 16px;
+    background: var(--blanc);
+}
+
+#add-button {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    width: 56px;
+    height: 56px;
+    border: none;
+    border-radius: 16px;
+    background: var(--bleu-clair);
+    font-size: 32px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+#add-button:hover {
+    background: #a8dbff;
+}
+
+#contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 400px;
+    margin-bottom: 24px;
+    padding: var(--espace);
+    border: 1px solid var(--gris-bordure);
+    border-radius: 12px;
+}
+
+#contact-form[hidden] {
+    display: none;                 
+}
+
+#contact-form input {
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+#contact-form input:focus {
+    outline: none;
+    border-color: var(--bleu);
+}
+
+#supprimer-button {
+    height: 40px;
+    border: none;
+    border-radius: 20px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+#save-button {
+    height: 40px;
+    border: none;
+    border-radius: 20px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+#form-error {
+    margin: 0;
+    color: var(--rouge);
+    font-size: 14px;
+}
+
+#contacts-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#contacts-list li {
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--gris-bordure);
+}
+
+#contacts-list .separateur {
+    padding: 8px 4px;
+    font-weight: bold;
+    color: white;
+    border-bottom: none;
+}
+
+#contacts-list .contact {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.infos {
+    flex: 1;
+    border: none;
+    background: transparent;
+    text-align: left;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.favori-btn {
+    border: none;
+    background: transparent;
+    font-size: 22px;
+    color: var(--jaune);
+    cursor: pointer;
+}
+
+#fiche-dialog {
+    min-width: 300px;
+    padding: 24px;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+#fiche-avatar {
+    width: 64px;
+    height: 64px;
+    font-size: 24px;
+}
+
+.avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;            
+    color: var(--blanc);
+    font-weight: bold;
+    flex-shrink: 0;                
+}
+
+#fiche-dialog button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    background: #f1f3f4;
+    cursor: pointer;
+}
+
+
+@media (max-width: 768px) {
+    .layout {
+        flex-direction: column;   
+    }
+    .sidebar {
+        width: 100%;
+    }
+    main {
+        margin: 0 8px 8px 8px;
+    }
+    #contact-form {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    header h2 {
+        display: none;             
+    }
 }
