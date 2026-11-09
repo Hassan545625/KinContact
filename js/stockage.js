@@ -1,20 +1,13 @@
-// const saveButton = document.getElementById("save-button");
-// const cancelBUtton = document.getElementById("cancel-button");
+const CLE_STOCKAGE ="kadea-contacts";
 
+function sauvegarder(contacts) {
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify(contacts));
+}
 
-    
-// // let contactList = JSON.parse(localStorage.getItem("contactList")) || [];
-// //     function listContacts(list=contacts) {
-// //         contactList.innerHTML = "";
-// //         emptyListMessage.style.display = list.length === 0 ? "block" : "none";
-// //     }
-
-        
-
-// // supprimerButton.addEventListener("click",() => {
-// //     let prenom = prenomInput.value;
-// //     let nom = nomInput.value;
-// //     let email = emailInput.value;
-// //     let telephone = telephoneInput.value;
-// //     });
-
+function charger() {
+    const donnees = localStorage.getItem(CLE_STOCKAGE);
+    if (donnees === null) {
+        return [];
+    }
+    return JSON.parse(donnees);
+}

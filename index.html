@@ -13,7 +13,7 @@
 <body>
   <header>
     <button id="menu-button" type="button">☰</button>
-    <span class="logo"><img src="icons/profil google.png " alt="" height="32" width="32"></span>
+    <span class="logo"><img src="icons/profil google.png" alt="" height="32" width="32"></span>
     <h2>KinContacts</h2>
     <div class="search-bar">
       <span class="search-icon"><img src="icons/ant-design--search-outlined.svg" alt="" height="20" width="20"></span>
@@ -24,7 +24,6 @@
   <div class="layout">
     <nav class="sidebar open">
           <button type="button" class="creation-btn" id="creation-contact"><img class="img-plus" src="icons/akar-icons--plus.svg" alt="" height="20" width="20"> Créer un contact</button>
-        <div id="listContacts"></div>
 
       <div id="popup">
         <div class="modal">
@@ -37,13 +36,13 @@
             <input type="text" id="prenom" placeholder="Prénom" required>
 
             <label for="nom">Nom</label>
-            <input type="text" id="nom" placeholder="Nom de famille" required>
+            <input type="text" id="nom" placeholder="Nom de famille">
 
             <label for="telephone">Téléphone</label>
-            <input type="tel" id="telephone" placeholder="Téléphone" required>
+            <input type="tel" id="telephone" placeholder="Téléphone">
 
             <label for="email">Email</label>
-            <input type="email" id="email" placeholder="Adresse email" required>
+            <input type="email" id="email" placeholder="Adresse email">
 
             <p id="form-error" role="alert"></p>
 
@@ -67,7 +66,7 @@
 
       
       <h3>Contacts</h3>
-      <ul id="contacts -list"></ul>
+      <ul id="contacts-list"></ul>
       <p id="empty-message">Aucun contact pour le moment.</p>
     </main>
   </div>

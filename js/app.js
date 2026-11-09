@@ -16,12 +16,12 @@ const emptyMessage = document.getElementById("empty-message");
 // Ouvrir le formulaire
 function ouvrirFormulaire() {
     formTitre.textContent = "Créer un contact";
-    popup.style.display = "block";
+    popup.classList.add("active");
 }
 
 // Fermer le formulaire
 function fermerFormulaire() {
-    popup.style.display = "none";
+    popup.classList.remove("active");
     contactForm.reset();
 }
 

@@ -187,7 +187,7 @@ main {
     border-color: var(--bleu);
 }
 
-#supprimer-button {
+#cancel-button {
     height: 40px;
     border: none;
     border-radius: 20px;
@@ -284,6 +284,7 @@ main {
     background: #f1f3f4;
     cursor: pointer;
 }
+
 #popup{
     display:none;
     position:fixed;
@@ -292,13 +293,16 @@ main {
     justify-content:center;
     align-items:center;
 }
+#popup.active {
+    display:flex;
+}
+
 .modal{
     background:var(--blanc);
     border-radius:16px;
     padding:24px;
     width:400px;
     max-width:90%;
-    /* margin-left:20px; */
 }
 
 
