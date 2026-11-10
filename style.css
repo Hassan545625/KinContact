@@ -7,8 +7,6 @@
     --gris-survol: #e8eaed;
     --bleu: #1a73e8;
     --bleu-clair: #c2e7ff;
-    --bleu-actif: #d3e3fd;
-    --bleu-recherche: #eaf1fb;
     --rouge: #b3261e;
     --jaune: #f9ab00;
     --espace: 16px;
@@ -30,7 +28,7 @@ header {
     align-items: center;
     gap: 12px;
     height: 64px;
-    padding: 8px ;
+    padding: 8px;
 }
 
 #menu-button {
@@ -71,6 +69,7 @@ header h1 {
 
 .search-bar:focus-within {
     background: #f0f4f9;
+    outline: 2px solid var(--bleu);
 }
 
 .search-icon {
@@ -90,7 +89,7 @@ header h1 {
 }
 
 .sidebar {
-    display: none;                 
+    display: none;
     flex-direction: column;
     gap: 4px;
     width: 256px;
@@ -99,7 +98,7 @@ header h1 {
 }
 
 .sidebar.open {
-    display: flex;                 
+    display: flex;
 }
 
 .creation-btn {
@@ -108,12 +107,12 @@ header h1 {
     padding: 18px 24px;
     border: none;
     border-radius: 16px;
-    background: #c2e7ff;
+    background: var(--bleu-clair);
     cursor: pointer;
 }
+
 .img-plus {
     margin-right: 10px;
-    
 }
 
 .sidebar a {
@@ -121,15 +120,14 @@ header h1 {
     border-radius: 24px;
     color: black;
     text-decoration: none;
-
 }
 
 .sidebar a:hover {
-    background: #c2e7ff;
+    background: var(--bleu-clair);
 }
 
 .sidebar a.active {
-    background: #c2e7ff;
+    background: var(--bleu-clair);
     font-weight: bold;
 }
 
@@ -170,10 +168,6 @@ main {
     border-radius: 12px;
 }
 
-#contact-form[hidden] {
-    display: none;                 
-}
-
 #contact-form input {
     height: 40px;
     padding: 0 12px;
@@ -187,14 +181,7 @@ main {
     border-color: var(--bleu);
 }
 
-#cancel-button {
-    height: 40px;
-    border: none;
-    border-radius: 20px;
-    font-size: 15px;
-    cursor: pointer;
-}
-
+#cancel-button,
 #save-button {
     height: 40px;
     border: none;
@@ -210,44 +197,66 @@ main {
 }
 
 #contacts-list {
-    list-style: none;
     margin: 0;
     padding: 0;
 }
 
-#contacts-list li {
-    padding: 12px 8px;
+.separateur-lettre {
+    margin: 12px 0 0;
+    padding: 8px 16px;
+    color: var(--gris-texte);
+    font-size: 14px;
+}
+
+.contact-ligne {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 16px;
     border-bottom: 1px solid var(--gris-bordure);
 }
 
-#contacts-list .separateur {
-    padding: 8px 16px;
-    font-weight: bold;
-    color: white;
-    border-bottom: none;
-}
-
-#contacts-list .contact {
+.avatar {
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: #ffffff;
+    font-weight: bold;
+    flex-shrink: 0;
 }
 
-.infos {
+.contact-nom {
     flex: 1;
-    border: none;
-    background: transparent;
-    text-align: left;
-    font-size: 16px;
-    cursor: pointer;
+    font-weight: 500;
 }
 
-.favori-btn {
+.contact-telephone {
+    flex: 1;
+    color: var(--gris-texte);
+}
+
+.btn-favori {
     border: none;
     background: transparent;
     font-size: 22px;
     color: var(--jaune);
     cursor: pointer;
+}
+
+.btn-supprimer {
+    padding: 8px 14px;
+    border: 1px solid var(--gris-bordure);
+    border-radius: 20px;
+    background: var(--blanc);
+    color: var(--rouge);
+    cursor: pointer;
+}
+
+.btn-supprimer:hover {
+    background: var(--gris-survol);
 }
 
 #fiche-dialog {
@@ -264,18 +273,6 @@ main {
     font-size: 24px;
 }
 
-.avatar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;            
-    color: #ffffff;
-    font-weight: bold;
-    flex-shrink: 0;                
-}
-
 #fiche-dialog button {
     margin-top: 10px;
     padding: 10px 20px;
@@ -285,30 +282,32 @@ main {
     cursor: pointer;
 }
 
-#popup{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.4);
-    justify-content:center;
-    align-items:center;
+#popup {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    justify-content: center;
+    align-items: center;
 }
+
 #popup.active {
-    display:flex;
+    display: flex;
 }
 
-.modal{
-    background:var(--blanc);
-    border-radius:16px;
-    padding:24px;
-    width:400px;
-    max-width:90%;
+.modal {
+    background: var(--blanc);
+    border-radius: 16px;
+    padding: 24px;
+    width: 400px;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
 }
-
 
 @media (max-width: 768px) {
     .layout {
-        flex-direction: column;   
+        flex-direction: column;
     }
     .sidebar {
         width: 100%;
@@ -322,7 +321,14 @@ main {
 }
 
 @media (max-width: 480px) {
-    header h2 {
-        display: none;             
+    header h1 {
+        display: none;
+    }
+    .contact-ligne {
+        flex-wrap: wrap;
+    }
+    .contact-nom,
+    .contact-telephone {
+        flex: 1 1 40%;
     }
 }
