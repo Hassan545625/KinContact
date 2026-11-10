@@ -1,227 +1,257 @@
-// ===== VARIABLES =====
-let vueFavoris = false;        
-let etiquetteActive = null;  
+const el = (id) => document.getElementById(id);
 
+const ui = {
+  vue: 'tous',          // 'tous' ou 'favoris'
+  etiquette: null,      // id de l'étiquette filtrée
+  texte: '',            // texte de la recherche
+  idEnModification: null,
+  minuterie: null,
+};
 
-function obtenirInitiales(contact) {
-    const premiereLettrePrenom = contact.prenom.charAt(0);
-    let premiereLettreNom = "";
+// ===== Messages =====
+const afficherNotification = (message) => {
+  const zone = el('notification');
+  zone.textContent = message;
+  clearTimeout(ui.minuterie);
+  ui.minuterie = setTimeout(() => {
+    zone.textContent = '';
+  }, 5000);
+};
 
-    if (contact.nom) {
-        premiereLettreNom = contact.nom.charAt(0);
+const afficherErreur = (zone, message) => {
+  zone.textContent = message;
+};
+
+// ===== Une ligne de contact =====
+const creerBouton = (texte, test, classe) => {
+  const bouton = document.createElement('button');
+  bouton.type = 'button';
+  bouton.textContent = texte;
+  bouton.dataset.test = test;
+  bouton.className = classe;
+  return bouton;
+};
+
+const creerLigneContact = (contact) => {
+  const carte = document.createElement('article');
+  carte.className = 'contact-ligne';
+  carte.dataset.test = 'contact';
+  carte.dataset.id = contact.id;
+
+  const avatar = document.createElement('span');
+  avatar.className = 'avatar';
+  avatar.dataset.test = 'avatar';
+  avatar.textContent = initiales(contact);
+  avatar.style.backgroundColor = couleurAvatar(contact);
+  avatar.setAttribute('aria-hidden', 'true');
+
+  const ouvrir = document.createElement('button');
+  ouvrir.type = 'button';
+  ouvrir.className = 'contact-ouvrir';
+  ouvrir.dataset.test = 'contact-ouvrir';
+  const nom = document.createElement('span');
+  nom.dataset.test = 'contact-nom';
+  nom.textContent = `${contact.prenom} ${contact.nom}`.trim();
+  ouvrir.appendChild(nom);
+
+  const telephone = document.createElement('span');
+  telephone.className = 'contact-telephone';
+  telephone.textContent = contact.telephone;
+
+  const etiquettes = document.createElement('span');
+  etiquettes.className = 'contact-etiquettes';
+  etiquettes.textContent = nomsEtiquettes(contact).join(', ');
+
+  const actions = document.createElement('div');
+  actions.className = 'contact-actions';
+
+  const favori = creerBouton(contact.favori ? '★' : '☆', 'contact-favori', 'btn-favori');
+  favori.setAttribute('aria-pressed', String(contact.favori));
+  favori.setAttribute('aria-label', contact.favori
+    ? `Retirer ${contact.prenom} des favoris`
+    : `Ajouter ${contact.prenom} aux favoris`);
+
+  const modifier = creerBouton('Modifier', 'contact-modifier', 'btn-action');
+  modifier.setAttribute('aria-label', `Modifier ${contact.prenom}`);
+
+  const supprimer = creerBouton('Supprimer', 'contact-supprimer', 'btn-action btn-supprimer');
+  supprimer.setAttribute('aria-label', `Supprimer ${contact.prenom}`);
+
+  actions.appendChild(favori);
+  actions.appendChild(modifier);
+  actions.appendChild(supprimer);
+
+  carte.appendChild(avatar);
+  carte.appendChild(ouvrir);
+  carte.appendChild(telephone);
+  carte.appendChild(etiquettes);
+  carte.appendChild(actions);
+
+  return carte;
+};
+
+// ===== Barre latérale : filtres d'étiquettes avec compteurs =====
+const afficherEtiquettes = () => {
+  const zone = el('liste-etiquettes');
+  zone.textContent = '';
+
+  const compteurs = compterParEtiquette(etat.contacts);
+  const etiquettes = Object.values(etat.etiquettes).sort(
+    (a, b) => a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' })
+  );
+
+  etiquettes.forEach((etiquette) => {
+    const bouton = document.createElement('button');
+    bouton.type = 'button';
+    bouton.className = 'btn-etiquette';
+    bouton.dataset.test = 'filtre-etiquette';
+    bouton.dataset.id = etiquette.id;
+    bouton.setAttribute('aria-pressed', String(ui.etiquette === etiquette.id));
+
+    if (ui.etiquette === etiquette.id) {
+      bouton.classList.add('etiquette-active');
     }
 
-    return (premiereLettrePrenom + premiereLettreNom).toUpperCase();
-}
+    const nom = document.createElement('span');
+    nom.textContent = etiquette.nom;
 
-function obtenirCouleur(contact) {
-    const couleurs = ["#1a73e8", "#e8710a", "#fbbc05", "#34a853", "#ff5252", "#9c27b0", "#00bcd4", "#ff9800", "#4caf50", "#2196f3"];
-    let total = 0;
+    const compteur = document.createElement('span');
+    compteur.className = 'compteur-etiquette';
+    compteur.dataset.test = 'compteur-etiquette';
+    compteur.textContent = String(compteurs[etiquette.id] || 0);
 
-    for (let i = 0; i < contact.prenom.length; i++) {
-        total += contact.prenom.charCodeAt(i);
-    }
+    bouton.appendChild(nom);
+    bouton.appendChild(compteur);
+    zone.appendChild(bouton);
+  });
+};
 
-    return couleurs[total % couleurs.length];
-}
+// ===== Formulaire : cases à cocher des étiquettes =====
+const afficherCases = (selection) => {
+  const zone = el('cases-etiquettes-liste');
+  zone.textContent = '';
 
+  const etiquettes = Object.values(etat.etiquettes);
 
-// ===== 2. FICHE DÉTAILLÉE =====
-function afficherFiche(contact) {
-    const dialog = document.getElementById("fiche-dialog");
-    const avatar = document.getElementById("fiche-avatar");
+  if (etiquettes.length === 0) {
+    const info = document.createElement('p');
+    info.textContent = 'Aucune étiquette. Créez-en une dans le menu.';
+    zone.appendChild(info);
+    return;
+  }
 
-    avatar.textContent = obtenirInitiales(contact);
-    avatar.style.backgroundColor = obtenirCouleur(contact);
+  etiquettes.forEach((etiquette) => {
+    const ligne = document.createElement('div');
+    ligne.className = 'case-etiquette';
 
-    document.getElementById("fiche-titre").textContent = contact.prenom + " " + contact.nom;
-    document.getElementById("fiche-telephone").textContent = contact.telephone || "Pas de téléphone";
-    document.getElementById("fiche-email").textContent = contact.email || "Pas d'e-mail";
+    const caseCochee = document.createElement('input');
+    caseCochee.type = 'checkbox';
+    caseCochee.name = 'etiquettes';
+    caseCochee.value = etiquette.id;
+    caseCochee.id = `case-${etiquette.id}`;
+    caseCochee.checked = selection.includes(etiquette.id);
 
-    dialog.dataset.id = contact.id;
-    dialog.showModal();
-}
+    const libelle = document.createElement('label');
+    libelle.htmlFor = caseCochee.id;
+    libelle.textContent = etiquette.nom;
 
+    ligne.appendChild(caseCochee);
+    ligne.appendChild(libelle);
+    zone.appendChild(ligne);
+  });
+};
 
-// ===== 3. UNE LIGNE DE CONTACT =====
-function creerLigneContact(contact) {
-    const ligne = document.createElement("div");
-    ligne.className = "contact-ligne";
+// ===== La liste des contacts =====
+const afficherListe = () => {
+  const conteneur = el('contacts-list');
+  conteneur.textContent = '';
 
-    // Avatar
-    const avatar = document.createElement("span");
-    avatar.className = "avatar";
-    avatar.textContent = obtenirInitiales(contact);
-    avatar.style.backgroundColor = obtenirCouleur(contact);
+  let visibles = rechercherContacts(etat.contacts, ui.texte);
 
-    // Nom (cliquable pour ouvrir la fiche)
-    const nomComplet = document.createElement("span");
-    nomComplet.className = "contact-nom";
-    nomComplet.textContent = contact.prenom + " " + contact.nom;
-    nomComplet.tabIndex = 0;
-    nomComplet.style.cursor = "pointer";
-    nomComplet.addEventListener("click", function () {
-        afficherFiche(contact);
+  if (ui.vue === 'favoris') {
+    visibles = visibles.filter((contact) => contact.favori === true);
+  }
+
+  if (ui.etiquette !== null) {
+    visibles = visibles.filter(
+      (contact) => contact.etiquettes.some((id) => id === ui.etiquette)
+    );
+  }
+
+  visibles = trierContacts(visibles);
+  const groupes = grouperParLettre(visibles);
+
+  Object.keys(groupes).forEach((lettre) => {
+    const separateur = document.createElement('h3');
+    separateur.className = 'separateur-lettre';
+    separateur.dataset.test = 'separateur-lettre';
+    separateur.textContent = lettre;
+    conteneur.appendChild(separateur);
+
+    groupes[lettre].forEach((contact) => {
+      conteneur.appendChild(creerLigneContact(contact));
     });
-    nomComplet.addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
-            afficherFiche(contact);
-        }
-    });
+  });
 
-    // Téléphone
-    const telephone = document.createElement("span");
-    telephone.className = "contact-telephone";
-    telephone.textContent = contact.telephone;
+  // Compteur
+  const nombre = visibles.length;
+  el('compteur').textContent = `${nombre} contact${nombre > 1 ? 's' : ''}`;
 
-    // Étiquettes
-    const etiquettes = document.createElement("span");
-    etiquettes.className = "contact-etiquettes";
-    etiquettes.textContent = (contact.etiquettes || []).join(", ");
+  // État vide
+  let message = 'Aucun contact pour le moment.';
+  if (ui.vue === 'favoris') {
+    message = 'Aucun favori pour le moment.';
+  }
+  if (ui.texte.trim() !== '' || ui.etiquette !== null) {
+    message = 'Aucun contact trouvé.';
+  }
+  const vide = el('etat-vide');
+  vide.textContent = message;
+  vide.hidden = nombre > 0;
+};
 
-    // Bouton favori
-    const boutonFavori = document.createElement("button");
-    boutonFavori.type = "button";
-    boutonFavori.className = "btn-favori";
-    boutonFavori.setAttribute("aria-label", "Marquer comme favori");
-    if (contact.favori) {
-        boutonFavori.textContent = "★";
-    } else {
-        boutonFavori.textContent = "☆";
-    }
-    boutonFavori.addEventListener("click", function () {
-        basculerFavori(contact.id);
-        afficherContacts();
-    });
+// ===== Vues Contacts / Favoris =====
+const afficherVues = () => {
+  const tous = el('lien-contacts');
+  const favoris = el('lien-favoris');
+  const vueFavoris = ui.vue === 'favoris';
 
-    // Bouton supprimer (avec confirmation)
-    const boutonSupprimer = document.createElement("button");
-    boutonSupprimer.type = "button";
-    boutonSupprimer.className = "btn-supprimer";
-    boutonSupprimer.textContent = "Supprimer";
-    boutonSupprimer.addEventListener("click", function () {
-        const confirme = confirm("Supprimer " + contact.prenom + " ?");
-        if (confirme) {
-            supprimerContact(contact.id);
-            afficherContacts();
-        }
-    });
+  tous.classList.toggle('active', !vueFavoris);
+  favoris.classList.toggle('active', vueFavoris);
 
-    // Assemblage de la ligne
-    ligne.appendChild(avatar);
-    ligne.appendChild(nomComplet);
-    ligne.appendChild(telephone);
-    ligne.appendChild(etiquettes);
-    ligne.appendChild(boutonFavori);
-    ligne.appendChild(boutonSupprimer);
+  if (vueFavoris) {
+    favoris.setAttribute('aria-current', 'page');
+    tous.removeAttribute('aria-current');
+  } else {
+    tous.setAttribute('aria-current', 'page');
+    favoris.removeAttribute('aria-current');
+  }
 
-    return ligne;
-}
+  el('titre-liste').textContent = vueFavoris ? 'Favoris' : 'Contacts';
+};
 
+// ===== Fiche détaillée =====
+const afficherFiche = (contact) => {
+  const dialogue = el('fiche-dialog');
+  const avatar = el('fiche-avatar');
+  const noms = nomsEtiquettes(contact);
 
-// ===== 4. ÉTIQUETTES (barre latérale) =====
-function afficherEtiquettes() {
-    const zone = document.getElementById("liste-etiquettes");
+  avatar.textContent = initiales(contact);
+  avatar.style.backgroundColor = couleurAvatar(contact);
+  el('fiche-titre').textContent = `${contact.prenom} ${contact.nom}`.trim();
+  el('fiche-telephone').textContent = contact.telephone;
+  el('fiche-email').textContent = contact.email !== '' ? contact.email : 'Non renseigné';
+  el('fiche-etiquettes').textContent = noms.length > 0 ? noms.join(', ') : 'Aucune';
+  dialogue.dataset.id = contact.id;
 
-    if (!zone) {
-        return;
-    }
+  if (!dialogue.open) {
+    dialogue.showModal();
+  }
+};
 
-    zone.textContent = "";
-
-    const compteurs = compterParEtiquette();
-    const noms = Object.keys(compteurs).sort();
-
-    noms.forEach(function (nom) {
-        const bouton = document.createElement("button");
-        bouton.type = "button";
-        bouton.className = "btn-etiquette";
-        if (nom === etiquetteActive) {
-            bouton.classList.add("etiquette-active");
-        }
-        bouton.textContent = nom + " (" + compteurs[nom] + ")";
-        bouton.addEventListener("click", function () {
-            if (etiquetteActive === nom) {
-                etiquetteActive = null;
-            } else {
-                etiquetteActive = nom;
-            }
-            afficherContacts();
-        });
-        zone.appendChild(bouton);
-    });
-}
-
-
-// ===== 5. LA LISTE COMPLÈTE =====
-function afficherContacts() {
-    const liste = document.getElementById("contacts-list");
-    liste.textContent = "";
-
-    // Texte de la recherche
-    const champRecherche = document.getElementById("recherche");
-    let texte = "";
-    if (champRecherche) {
-        texte = champRecherche.value;
-    }
-
-    // Contacts à montrer : recherche, puis favoris, puis étiquette
-    let tous = rechercherContacts(texte);
-
-    if (vueFavoris) {
-        tous = tous.filter(function (contact) {
-            return contact.favori;
-        });
-    }
-
-    if (etiquetteActive !== null) {
-        tous = tous.filter(function (contact) {
-            return aEtiquette(contact, etiquetteActive);
-        });
-    }
-
-    // Barre latérale et compteur
-    afficherEtiquettes();
-
-    const compteurTotal = document.getElementById("compteur-total");
-    if (compteurTotal) {
-        let message = tous.length + " contact(s) affiché(s) sur " + contacts.length;
-        if (etiquetteActive !== null) {
-            message = message + " (étiquette : " + etiquetteActive + ")";
-        }
-        compteurTotal.textContent = message;
-    }
-
-    // État vide
-    if (tous.length === 0) {
-        const vide = document.createElement("p");
-
-        if (vueFavoris) {
-            vide.textContent = "Aucun favori pour le moment.";
-        } else if (texte.trim() !== "" || etiquetteActive !== null) {
-            vide.textContent = "Aucun contact trouvé.";
-        } else {
-            vide.textContent = "Aucun contact pour le moment.";
-        }
-
-        liste.appendChild(vide);
-        return;
-    }
-
-    // Séparateur à chaque nouvelle lettre, puis la ligne du contact
-    let lettreActuelle = "";
-
-    tous.forEach(function (contact) {
-        const lettre = contact.prenom.charAt(0).toUpperCase();
-
-        if (lettre !== lettreActuelle) {
-            lettreActuelle = lettre;
-            const separateur = document.createElement("h3");
-            separateur.className = "separateur-lettre";
-            separateur.textContent = lettre;
-            liste.appendChild(separateur);
-        }
-
-        liste.appendChild(creerLigneContact(contact));
-    });
-}
+// ===== Tout redessiner =====
+const afficherTout = () => {
+  afficherEtiquettes();
+  afficherListe();
+  afficherVues();
+};

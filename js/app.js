@@ -1,123 +1,197 @@
-const creationContact = document.getElementById("creation-contact");
-const contactForm = document.getElementById("contact-form");
-const addButton = document.getElementById("add-button");
-const cancelButton = document.getElementById("cancel-button");
-const closeButton = document.getElementById("close-button");
-const formTitre = document.getElementById("form-titre");
-const formError = document.getElementById("form-error");
-const popup = document.getElementById("popup");
-const ficheDialog = document.getElementById("fiche-dialog");
-const champRecherche = document.getElementById("recherche");
+const modaleContact = el('modale-contact');
+const formContact = el('contact-form');
+const formEtiquette = el('form-etiquette');
+const ficheDialog = el('fiche-dialog');
 
-let idEnModification = null;
+const zoneErreurContact = formContact.querySelector('[data-test="erreur"]');
+const zoneErreurEtiquette = formEtiquette.querySelector('[data-test="erreur"]');
 
+// ===== Formulaire de contact =====
+const ouvrirFormulaire = (contact) => {
+  formContact.reset();
+  afficherErreur(zoneErreurContact, '');
 
-function ouvrirFormulaire() {
-    idEnModification = null;
-    formTitre.textContent = "Créer un contact";
-    formError.textContent = "";
-    contactForm.reset();
-    popup.classList.add("active");
-}
+  if (contact === undefined) {
+    ui.idEnModification = null;
+    el('form-titre').textContent = 'Nouveau contact';
+    afficherCases([]);
+  } else {
+    ui.idEnModification = contact.id;
+    el('form-titre').textContent = 'Modifier le contact';
+    el('prenom').value = contact.prenom;
+    el('nom').value = contact.nom;
+    el('telephone').value = contact.telephone;
+    el('email').value = contact.email;
+    afficherCases(contact.etiquettes);
+  }
 
-function fermerFormulaire() {
-    idEnModification = null;
-    popup.classList.remove("active");
-    formError.textContent = "";
-    contactForm.reset();
-}
+  if (!modaleContact.open) {
+    modaleContact.showModal();
+  }
+};
 
-creationContact.addEventListener("click", ouvrirFormulaire);
-addButton.addEventListener("click", ouvrirFormulaire);
-closeButton.addEventListener("click", fermerFormulaire);
-cancelButton.addEventListener("click", fermerFormulaire);
+el('creation-contact').addEventListener('click', () => ouvrirFormulaire());
+el('add-button').addEventListener('click', () => ouvrirFormulaire());
+el('cancel-button').addEventListener('click', () => modaleContact.close());
 
-contactForm.addEventListener("submit", function (event) {
-    event.preventDefault();
+formContact.addEventListener('submit', (event) => {
+  event.preventDefault();
 
-    const prenom = document.getElementById("prenom").value.trim();
-    const nom = document.getElementById("nom").value.trim();
-    const telephone = document.getElementById("telephone").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const etiquettes = texteVersEtiquettes(document.getElementById("etiquettes").value);
+  const donnees = new FormData(formContact);
+  const saisie = {
+    prenom: String(donnees.get('prenom')).trim(),
+    nom: String(donnees.get('nom')).trim(),
+    telephone: String(donnees.get('telephone')).trim(),
+    email: String(donnees.get('email')).trim(),
+    etiquettes: donnees.getAll('etiquettes'),
+  };
 
-    if (prenom === "") {
-        formError.textContent = "Le prénom est obligatoire.";
-        return;
-    }
+  const messages = Object.values(validerContact(saisie));
 
-    const telephoneNettoye = telephone.replace(/[\s.-]/g, "");
-    const regexTelephone = /^(\+243|00243|243|0)?[0-9]{9}$/;
+  if (messages.length > 0) {
+    afficherErreur(zoneErreurContact, messages.join(' '));
+    return;
+  }
 
-    if (telephoneNettoye !== "" && !regexTelephone.test(telephoneNettoye)) {
-        formError.textContent = "Téléphone invalide. Exemples : 0990000000, 099 000 00 00 ou +243 990 000 000.";
-        return;
-    }
+  if (ui.idEnModification === null) {
+    const contact = ajouterContact(saisie);
+    afficherNotification(`Contact ajouté : ${contact.prenom}.`);
+  } else {
+    const contact = modifierContact(ui.idEnModification, saisie);
+    afficherNotification(`Contact modifié : ${contact.prenom}.`);
+  }
 
-    if (idEnModification === null) {
-        creerContact(prenom, nom, telephone, email, etiquettes);
-    } else {
-        modifierContact(idEnModification, prenom, nom, telephone, email);
-    }
-
-    afficherContacts();
-    fermerFormulaire();
+  sauvegarder(etat);
+  modaleContact.close();
+  afficherTout();
 });
 
+// ===== Formulaire d'étiquette =====
+formEtiquette.addEventListener('submit', (event) => {
+  event.preventDefault();
 
-document.getElementById("fiche-fermer").addEventListener("click", function () {
-    ficheDialog.close();
+  const nom = String(new FormData(formEtiquette).get('nom')).trim();
+  const message = validerEtiquette(nom);
+
+  if (message !== '') {
+    afficherErreur(zoneErreurEtiquette, message);
+    return;
+  }
+
+  creerEtiquette(nom);
+  sauvegarder(etat);
+  afficherErreur(zoneErreurEtiquette, '');
+  formEtiquette.reset();
+  afficherNotification(`Étiquette créée : ${nom}.`);
+  afficherTout();
 });
 
-document.getElementById("fiche-modifier").addEventListener("click", function () {
-    const contact = trouverContact(Number(ficheDialog.dataset.id));
+// ===== Actions sur la liste (favori, modifier, supprimer, fiche) =====
+el('contacts-list').addEventListener('click', (event) => {
+  const bouton = event.target.closest('button');
 
-    if (contact === undefined) {
-        return;
+  if (bouton === null) {
+    return;
+  }
+
+  const carte = bouton.closest('[data-test="contact"]');
+
+  if (carte === null) {
+    return;
+  }
+
+  const contact = trouverContact(carte.dataset.id);
+
+  if (contact === undefined) {
+    return;
+  }
+
+  const action = bouton.dataset.test;
+
+  if (action === 'contact-ouvrir') {
+    afficherFiche(contact);
+  } else if (action === 'contact-modifier') {
+    ouvrirFormulaire(contact);
+  } else if (action === 'contact-favori') {
+    basculerFavori(contact.id);
+    sauvegarder(etat);
+    afficherNotification(contact.favori
+      ? `${contact.prenom} ajouté aux favoris.`
+      : `${contact.prenom} retiré des favoris.`);
+    afficherTout();
+  } else if (action === 'contact-supprimer') {
+    if (window.confirm(`Supprimer ${contact.prenom} ${contact.nom} ?`)) {
+      supprimerContact(contact.id);
+      sauvegarder(etat);
+      afficherNotification(`Contact supprimé : ${contact.prenom}.`);
+      afficherTout();
     }
-
-    ficheDialog.close();
-    idEnModification = contact.id;
-
-    document.getElementById("prenom").value = contact.prenom;
-    document.getElementById("nom").value = contact.nom;
-    document.getElementById("telephone").value = contact.telephone;
-    document.getElementById("email").value = contact.email;
-
-    formTitre.textContent = "Modifier le contact";
-    formError.textContent = "";
-    popup.classList.add("active");
+  }
 });
 
+// ===== Fiche détaillée =====
+el('fiche-fermer').addEventListener('click', () => ficheDialog.close());
 
-if (champRecherche) {
-    champRecherche.addEventListener("input", afficherContacts);
-}
+el('fiche-modifier').addEventListener('click', () => {
+  const contact = trouverContact(ficheDialog.dataset.id);
 
+  if (contact === undefined) {
+    return;
+  }
 
-const lienContacts = document.getElementById("lien-contacts");
-const lienFavoris = document.getElementById("lien-favoris");
-const titreListe = document.getElementById("titre-liste");
+  ficheDialog.close();
+  ouvrirFormulaire(contact);
+});
 
-if (lienContacts && lienFavoris && titreListe) {
-    lienContacts.addEventListener("click", function (event) {
-        event.preventDefault();
-        vueFavoris = false;
-        lienContacts.classList.add("active");
-        lienFavoris.classList.remove("active");
-        titreListe.textContent = "Contacts";
-        afficherContacts();
-    });
+// ===== Recherche en direct =====
+el('recherche').addEventListener('input', (event) => {
+  ui.texte = event.target.value;
+  afficherListe();
+});
 
-    lienFavoris.addEventListener("click", function (event) {
-        event.preventDefault();
-        vueFavoris = true;
-        lienFavoris.classList.add("active");
-        lienContacts.classList.remove("active");
-        titreListe.textContent = "Favoris";
-        afficherContacts();
-    });
-}
+// ===== Vues Contacts / Favoris =====
+el('lien-contacts').addEventListener('click', (event) => {
+  event.preventDefault();
+  ui.vue = 'tous';
+  afficherTout();
+});
 
+el('lien-favoris').addEventListener('click', (event) => {
+  event.preventDefault();
+  ui.vue = 'favoris';
+  afficherTout();
+});
 
-afficherContacts();
+// ===== Filtre par étiquette =====
+el('liste-etiquettes').addEventListener('click', (event) => {
+  const bouton = event.target.closest('button');
+
+  if (bouton === null) {
+    return;
+  }
+
+  ui.etiquette = ui.etiquette === bouton.dataset.id ? null : bouton.dataset.id;
+  afficherTout();
+});
+
+// ===== Menu latéral =====
+el('menu-button').addEventListener('click', () => {
+  const ouvert = el('menu-lateral').classList.toggle('open');
+  el('menu-button').setAttribute('aria-expanded', String(ouvert));
+});
+
+// ===== Démarrage =====
+const demarrer = () => {
+  const charge = charger();
+
+  if (charge !== null && Array.isArray(charge.contacts) && charge.etiquettes !== undefined) {
+    etat = charge;
+  } else {
+    etat = creerDonneesDemo();
+    sauvegarder(etat);
+  }
+
+  afficherTout();
+};
+
+demarrer();

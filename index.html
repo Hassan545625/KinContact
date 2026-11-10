@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="KinContacts : un carnet d'adresses inspiré de Google Contacts.">
   <title>KinContacts</title>
   <link rel="stylesheet" href="style.css">
   <script src="js/stockage.js" defer></script>
@@ -12,80 +13,93 @@
 </head>
 <body>
   <header>
-    <button id="menu-button" type="button">☰</button>
-    <span class="logo"><img src="icons/profil google.png" alt="" height="32" width="32"></span>
+    <button id="menu-button" type="button" aria-label="Afficher ou masquer le menu" aria-expanded="true" aria-controls="menu-lateral">☰</button>
+    <span class="logo"><img src="icons/profil%20google.png" alt="" height="32" width="32"></span>
     <h1>KinContacts</h1>
     <div class="search-bar">
       <span class="search-icon"><img src="icons/ant-design--search-outlined.svg" alt="" height="20" width="20"></span>
-      <input type="text" id="recherche" class="voirinput" placeholder="Rechercher" aria-label="Rechercher un contact">
+      <label for="recherche" class="sr-only">Rechercher un contact</label>
+      <input type="search" id="recherche" class="voirinput" data-test="recherche" placeholder="Rechercher" autocomplete="off">
     </div>
   </header>
 
   <div class="layout">
-    <nav class="sidebar open">
-          <button type="button" class="creation-btn" id="creation-contact"><img class="img-plus" src="icons/akar-icons--plus.svg" alt="" height="20" width="20"> Créer un contact</button>
+    <nav class="sidebar open" id="menu-lateral" aria-label="Menu principal">
+      <button type="button" class="creation-btn" id="creation-contact" data-test="contact-nouveau"><img class="img-plus" src="icons/akar-icons--plus.svg" alt="" height="20" width="20"> Créer un contact</button>
 
-      <div id="popup">
-        <div class="modal">
-          
-          <button id="close-button" type="button">X</button>
-              <form id="contact-form">
-              <h3 id="form-titre">Nouveau contact</h3>
-
-            <label for="prenom">Prénom (obligatoire)</label>
-            <input type="text" id="prenom" placeholder="Prénom" required>
-
-            <label for="nom">Nom</label>
-            <input type="text" id="nom" placeholder="Nom de famille">
-
-            <label for="telephone">Téléphone</label>
-            <input type="tel" id="telephone" placeholder="Téléphone">
-
-            <label for="email">Email</label>
-            <input type="email" id="email" placeholder="Adresse email">
-
-            <label for="etiquettes">Étiquettes</label>
-            <input type="text" id="etiquettes" placeholder="Étiquettes (séparées par des virgules)">
-
-            <p id="form-error" role="alert"></p>
-
-            <button type="reset" id="cancel-button">Annuler</button>
-            <button type="submit" id="save-button">Enregistrer</button>
-            </form>
-        </div>
-      </div>
-      <a href="#" id="lien-contacts" class="active"><img src="icons/basil--user-solid.svg" alt="user" height="20" width="20"> Contacts</a>
-      <a href="#" id="lien-favoris">⭐ Favoris</a>
+      <a href="#" id="lien-contacts" class="active" data-test="vue-tous"><img src="icons/basil--user-solid.svg" alt="" height="20" width="20"> Contacts</a>
+      <a href="#" id="lien-favoris" data-test="vue-favoris">★ Favoris</a>
       <a href="#"><img src="icons/akar-icons--folder-add.svg" alt="" height="20" width="20"> Frequent</a>
       <a href="#"><img src="icons/lucide--rotate-ccw-clock.svg" alt="" height="20" width="20"> Other contacts</a>
       <a href="#"><img src="icons/bi--tools.svg" alt="" height="20" width="20"> Merge et fix</a>
       <a href="#"><img src="icons/bytesize--import.svg" alt="" height="20" width="20"> Import</a>
       <a href="#"><img src="icons/bi--trash.svg" alt="" height="20" width="20"> Trash</a>
+
       <p class="titre-etiquettes">Étiquettes</p>
       <div id="liste-etiquettes"></div>
+
+      <form id="form-etiquette" data-test="form-etiquette" novalidate>
+        <label for="nouvelle-etiquette">Nouvelle étiquette</label>
+        <input type="text" id="nouvelle-etiquette" name="nom" autocomplete="off">
+        <button type="submit" class="btn-action">Ajouter</button>
+        <p class="erreur" data-test="erreur" role="alert"></p>
+      </form>
     </nav>
 
     <main>
-      <button id="add-button" type="button">+</button>
-
-      
-      <h3 id="titre-liste">Contacts</h3>
-      <p id="compteur-total"></p>
+      <h2 id="titre-liste">Contacts</h2>
+      <p id="compteur" data-test="compteur"></p>
+      <p id="notification" data-test="notification" role="status"></p>
+      <p id="etat-vide" data-test="etat-vide" hidden>Aucun contact pour le moment.</p>
       <div id="contacts-list"></div>
+      <button id="add-button" type="button" aria-label="Créer un contact">+</button>
     </main>
   </div>
 
-  <dialog id="fiche-dialog">
-    <span id="fiche-avatar" class="avatar"></span>
-    <h3 id="fiche-titre"></h3>
-    <p id="fiche-telephone"></p>
-    <p id="fiche-email"></p>
-      <button type="button" id="fiche-modifier">Modifier</button>
-      <button type="button" id="fiche-fermer">Fermer</button>
+  <dialog id="modale-contact" data-test="modale" aria-labelledby="form-titre">
+    <form id="contact-form" data-test="form-contact" novalidate>
+      <h2 id="form-titre">Nouveau contact</h2>
+
+      <label for="prenom">Prénom (obligatoire)</label>
+      <input type="text" id="prenom" name="prenom" required autocomplete="given-name">
+
+      <label for="nom">Nom</label>
+      <input type="text" id="nom" name="nom" autocomplete="family-name">
+
+      <label for="telephone">Téléphone (obligatoire)</label>
+      <input type="tel" id="telephone" name="telephone" required autocomplete="tel" placeholder="+243 812 345 678">
+
+      <label for="email">E-mail</label>
+      <input type="email" id="email" name="email" autocomplete="email">
+
+      <fieldset>
+        <legend>Étiquettes</legend>
+        <div id="cases-etiquettes-liste"></div>
+      </fieldset>
+
+      <p class="erreur" data-test="erreur" role="alert"></p>
+
+      <div class="actions">
+        <button type="button" id="cancel-button" class="btn-action" data-test="fermer">Annuler</button>
+        <button type="submit" id="save-button" class="btn-principal">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="fiche-dialog" data-test="fiche" aria-labelledby="fiche-titre">
+    <span id="fiche-avatar" class="avatar" aria-hidden="true"></span>
+    <h2 id="fiche-titre"></h2>
+    <p>Téléphone : <span id="fiche-telephone"></span></p>
+    <p>E-mail : <span id="fiche-email"></span></p>
+    <p>Étiquettes : <span id="fiche-etiquettes"></span></p>
+    <div class="actions">
+      <button type="button" id="fiche-modifier" class="btn-action" data-test="fiche-modifier">Modifier</button>
+      <button type="button" id="fiche-fermer" class="btn-action" data-test="fermer">Fermer</button>
+    </div>
   </dialog>
 
   <footer>
-
+    <p>KinContacts · projet de fin de module</p>
   </footer>
 </body>
 </html>
