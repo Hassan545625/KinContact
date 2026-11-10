@@ -115,6 +115,13 @@ header h1 {
     margin-right: 10px;
 }
 
+.contact-etiquettes {
+    flex: 1 1 0;
+    min-width: 0;
+    color: var(--bleu);
+    font-size: 14px;
+}
+
 .sidebar a {
     padding: 10px;
     border-radius: 24px;

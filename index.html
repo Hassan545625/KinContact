@@ -44,6 +44,9 @@
             <label for="email">Email</label>
             <input type="email" id="email" placeholder="Adresse email">
 
+            <label for="etiquettes">Étiquettes</label>
+            <input type="text" id="etiquettes" placeholder="Étiquettes (séparées par des virgules)">
+
             <p id="form-error" role="alert"></p>
 
             <button type="reset" id="cancel-button">Annuler</button>
@@ -58,7 +61,8 @@
       <a href="#"><img src="icons/bi--tools.svg" alt="" height="20" width="20"> Merge et fix</a>
       <a href="#"><img src="icons/bytesize--import.svg" alt="" height="20" width="20"> Import</a>
       <a href="#"><img src="icons/bi--trash.svg" alt="" height="20" width="20"> Trash</a>
-      <a href="#"> Labels +</a>
+      <p class="titre-etiquettes">Étiquettes</p>
+      <div id="liste-etiquettes"></div>
     </nav>
 
     <main>
@@ -66,6 +70,7 @@
 
       
       <h3 id="titre-liste">Contacts</h3>
+      <p id="compteur-total"></p>
       <div id="contacts-list"></div>
     </main>
   </div>
