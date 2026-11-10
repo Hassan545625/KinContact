@@ -1,6 +1,6 @@
 let contacts = charger();
 
-function ajouterContact(prenom, nom, telephone,email) {
+function creerContact(prenom, nom, telephone,email) {
     const contact = {
         id: Date.now(),
         prenom: prenom,

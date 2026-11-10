@@ -1,73 +1,51 @@
-
-// Récupération des éléments HTML
 const creationContact = document.getElementById("creation-contact");
-const contactList = document.getElementById("contacts-list");
 const contactForm = document.getElementById("contact-form");
-
 const addButton = document.getElementById("add-button");
-const saveButton = document.getElementById("save-button");
 const cancelButton = document.getElementById("cancel-button");
 const closeButton = document.getElementById("close-button");
-
 const formTitre = document.getElementById("form-titre");
+const formError = document.getElementById("form-error");
 const popup = document.getElementById("popup");
-const emptyMessage = document.getElementById("empty-message");
 
-// Ouvrir le formulaire
 function ouvrirFormulaire() {
     formTitre.textContent = "Créer un contact";
+    formError.textContent = "";
     popup.classList.add("active");
 }
 
-// Fermer le formulaire
 function fermerFormulaire() {
     popup.classList.remove("active");
+    formError.textContent = "";
     contactForm.reset();
 }
 
-// Bouton créer un contact
 creationContact.addEventListener("click", ouvrirFormulaire);
-
-// Bouton +
 addButton.addEventListener("click", ouvrirFormulaire);
-
-// Bouton fermer
 closeButton.addEventListener("click", fermerFormulaire);
-
-// Bouton annuler
 cancelButton.addEventListener("click", fermerFormulaire);
 
-// Enregistrer un contact
-contactForm.addEventListener("submit", function(event) {
+contactForm.addEventListener("submit", function (event) {
     event.preventDefault();
 
-    // Récupérer les valeurs
     const prenom = document.getElementById("prenom").value.trim();
     const nom = document.getElementById("nom").value.trim();
     const telephone = document.getElementById("telephone").value.trim();
     const email = document.getElementById("email").value.trim();
 
-    // Créer le contact
-    const contact = document.createElement("li");
+    if (prenom === "") {
+        formError.textContent = "Le prénom est obligatoire.";
+        return;
+    }
 
-    contact.innerHTML = `
-        <strong>${prenom} ${nom}</strong>
-        <p>${telephone}</p>
-        <p>${email}</p>
-    `;
+    const regexTelephone = /^(\+243|0)[0-9]{9}$/;
+    if (telephone !== "" && !regexTelephone.test(telephone)) {
+        formError.textContent = "Téléphone invalide. Exemple : 0990000000 ou +243990000000.";
+        return;
+    }
 
-    // Ajouter à la liste
-    contactList.appendChild(contact);
-
-    // Cacher le message si la liste contient un contact
-    emptyMessage.style.display = "none";
-
-    // Réinitialiser et fermer
-    contactForm.reset();
+    creerContact(prenom, nom, telephone, email);
+    afficherContacts();
     fermerFormulaire();
 });
 
-// Afficher le message si aucun contact
-if (contactList.children.length === 0) {
-    emptyMessage.style.display = "block";
-}
+afficherContacts();
