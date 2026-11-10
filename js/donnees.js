@@ -8,7 +8,7 @@ function creerContact(prenom, nom, telephone,email) {
         telephone: telephone,
         email: email,
         favori: false,
-        etiquette: []
+        etiquettes: []
     };
     contacts.push(contact);
     sauvegarder(contacts);
