@@ -55,3 +55,13 @@ function contactsTries() {
         return a.prenom.localeCompare(b.prenom);
     });
 }
+function rechercherContacts(texte) {
+    const t = texte.trim().toLowerCase();
+
+    return contactsTries().filter(function (contact) {
+        const nomComplet = (contact.prenom + " " + contact.nom).toLowerCase();
+        return nomComplet.includes(t)
+            || contact.telephone.includes(t)
+            || contact.email.toLowerCase().includes(t);
+    });
+}

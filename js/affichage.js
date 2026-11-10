@@ -1,3 +1,5 @@
+let vueFavoris = false;
+
 function obtenirInitiales(contact) {
     const p = contact.prenom.charAt(0);
     const n = contact.nom ? contact.nom.charAt(0) : "";
@@ -14,15 +16,43 @@ function obtenirCouleur(contact) {
     return couleurs[total % couleurs.length];
 }
 
+function afficherFiche(contact) {
+    const dialog = document.getElementById("fiche-dialog");
+    const avatar = document.getElementById("fiche-avatar");
+
+    avatar.textContent = obtenirInitiales(contact);
+    avatar.style.backgroundColor = obtenirCouleur(contact);
+    document.getElementById("fiche-titre").textContent = contact.prenom + " " + contact.nom;
+    document.getElementById("fiche-telephone").textContent = contact.telephone || "Pas de téléphone";
+    document.getElementById("fiche-email").textContent = contact.email || "Pas d'e-mail";
+
+    dialog.dataset.id = contact.id;
+    dialog.showModal();
+}
+
 function afficherContacts() {
     const liste = document.getElementById("contacts-list");
     liste.textContent = "";
 
-    const tous = contactsTries();
+    const champRecherche = document.getElementById("recherche");
+    const texte = champRecherche ? champRecherche.value : "";
+
+    let tous = rechercherContacts(texte);
+    if (vueFavoris) {
+        tous = tous.filter(function (contact) {
+            return contact.favori;
+        });
+    }
 
     if (tous.length === 0) {
         const vide = document.createElement("p");
-        vide.textContent = "Aucun contact pour le moment.";
+        if (vueFavoris) {
+            vide.textContent = "Aucun favori pour le moment.";
+        } else if (texte.trim() !== "") {
+            vide.textContent = "Aucun contact trouvé.";
+        } else {
+            vide.textContent = "Aucun contact pour le moment.";
+        }
         liste.appendChild(vide);
         return;
     }
@@ -50,6 +80,16 @@ function afficherContacts() {
         const nomComplet = document.createElement("span");
         nomComplet.className = "contact-nom";
         nomComplet.textContent = contact.prenom + " " + contact.nom;
+        nomComplet.tabIndex = 0;
+        nomComplet.style.cursor = "pointer";
+        nomComplet.addEventListener("click", function () {
+            afficherFiche(contact);
+        });
+        nomComplet.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                afficherFiche(contact);
+            }
+        });
 
         const telephone = document.createElement("span");
         telephone.className = "contact-telephone";
